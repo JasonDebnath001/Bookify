@@ -3,12 +3,15 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { DEFAULT_VOICE, voiceOptions } from "./constants";
 
+// Type for JSON-serializable data (strips Date, ObjectId, etc.)
+export type JSONSerializable = Record<string, any>;
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
 // Serialize Mongoose documents to plain JSON objects (strips ObjectId, Date, etc.)
-export const serializeData = <T>(data: T): T =>
+export const serializeData = <T>(data: T): JSONSerializable =>
   JSON.parse(JSON.stringify(data));
 
 // Auto generate slug
@@ -91,6 +94,8 @@ export const formatDuration = (seconds: number): string => {
 };
 
 export async function parsePDFFile(file: File) {
+  let pdfDocument: any;
+
   try {
     const pdfjsLib = await import("pdfjs-dist");
 
@@ -106,7 +111,7 @@ export async function parsePDFFile(file: File) {
 
     // Load PDF document
     const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-    const pdfDocument = await loadingTask.promise;
+    pdfDocument = await loadingTask.promise;
 
     // Render first page as cover image
     const firstPage = await pdfDocument.getPage(1);
@@ -145,9 +150,6 @@ export async function parsePDFFile(file: File) {
     // Split text into segments for search
     const segments = splitIntoSegments(fullText);
 
-    // Clean up PDF document resources
-    await pdfDocument.destroy();
-
     return {
       content: segments,
       cover: coverDataURL,
@@ -157,5 +159,10 @@ export async function parsePDFFile(file: File) {
     throw new Error(
       `Failed to parse PDF file: ${error instanceof Error ? error.message : String(error)}`,
     );
+  } finally {
+    // Ensure PDF document resources are always released
+    if (pdfDocument) {
+      await pdfDocument.destroy();
+    }
   }
 }

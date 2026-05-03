@@ -14,10 +14,10 @@ const page = () => {
       >
         {/* Hero Section */}
         <div
-          className="max-w-7xl mx-auto rounded-2xl p-12 shadow-lg m-8"
+          className="max-w-7xl mx-auto rounded-2xl p-6 m-4 md:p-12 md:m-8 shadow-lg"
           style={{ backgroundColor: "var(--bg-secondary)" }}
         >
-          <div className="grid grid-cols-3 gap-8 items-center">
+          <div className="grid grid-cols-1 gap-6 items-center md:grid-cols-3 md:gap-8">
             {/* Left Section */}
             <div className="space-y-6">
               <div>
@@ -49,7 +49,7 @@ const page = () => {
             </div>
 
             {/* Center Section - Hero Illustration */}
-            <div className="flex justify-center items-center">
+            <div className="flex justify-center items-center order-2 md:order-none">
               <Image
                 src={heroIllustration}
                 alt="Library illustration"
