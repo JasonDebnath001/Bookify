@@ -3,14 +3,28 @@ import { z } from "zod";
 export const UploadSchema = z.object({
   pdfFile: z
     .union([z.instanceof(File), z.undefined()])
-    .refine((file): file is File => file instanceof File, {
-      message: "PDF file is required",
-    })
-    .refine((file) => file.type === "application/pdf", {
-      message: "Only PDF files are allowed",
-    })
-    .refine((file) => file.size <= 50 * 1024 * 1024, {
-      message: "PDF must be 50MB or smaller",
+    .superRefine((file, ctx) => {
+      if (!file) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "PDF file is required",
+        });
+        return;
+      }
+
+      if (file.type !== "application/pdf") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Only PDF files are allowed",
+        });
+      }
+
+      if (file.size > 50 * 1024 * 1024) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "PDF must be 50MB or smaller",
+        });
+      }
     }),
   coverImage: z
     .union([z.instanceof(File), z.undefined(), z.null()])
@@ -20,6 +34,6 @@ export const UploadSchema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
   author: z.string().min(1, { message: "Author name is required" }),
   assistantVoice: z.enum(["dave", "daniel", "chris", "rachel", "sarah"], {
-    errorMap: () => ({ message: "Please choose an assistant voice" }),
+    error: () => ({ message: "Please choose an assistant voice" }),
   }),
 });

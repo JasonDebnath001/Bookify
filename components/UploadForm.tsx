@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FileText, ImagePlus, X } from "lucide-react";
@@ -65,6 +65,8 @@ const UploadForm = () => {
     },
   });
 
+  const pdfInputRef = useRef<HTMLInputElement | null>(null);
+  const coverInputRef = useRef<HTMLInputElement | null>(null);
   const { control, handleSubmit, setValue, watch, formState } = form;
   const { errors, isSubmitting } = formState;
   const pdfFile = watch("pdfFile");
@@ -99,7 +101,8 @@ const UploadForm = () => {
                   id="pdf-upload"
                   type="file"
                   accept="application/pdf"
-                  className="hidden"
+                  className="sr-only"
+                  ref={pdfInputRef}
                   onChange={(event) => {
                     const file = event.target.files?.[0];
                     field.onChange(file);
@@ -115,7 +118,12 @@ const UploadForm = () => {
                       <button
                         type="button"
                         className="upload-dropzone-remove"
-                        onClick={() => {
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          if (pdfInputRef.current) {
+                            pdfInputRef.current.value = "";
+                          }
                           setValue("pdfFile", undefined as unknown as File, {
                             shouldValidate: true,
                           });
@@ -158,7 +166,8 @@ const UploadForm = () => {
                   id="cover-upload"
                   type="file"
                   accept="image/*"
-                  className="hidden"
+                  className="sr-only"
+                  ref={coverInputRef}
                   onChange={(event) => {
                     const file = event.target.files?.[0];
                     field.onChange(file);
@@ -174,7 +183,12 @@ const UploadForm = () => {
                       <button
                         type="button"
                         className="upload-dropzone-remove"
-                        onClick={() => {
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          if (coverInputRef.current) {
+                            coverInputRef.current.value = "";
+                          }
                           setValue("coverImage", undefined, {
                             shouldValidate: true,
                           });
@@ -278,7 +292,8 @@ const UploadForm = () => {
                           >
                             <input
                               type="radio"
-                              className="hidden"
+                              className="sr-only"
+                              aria-label={option.name}
                               value={option.value}
                               checked={selected}
                               onChange={() => field.onChange(option.value)}
